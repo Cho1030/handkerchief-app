@@ -310,7 +310,7 @@ function render() {
                     <tr class="${cls}">
                       <td><input type="text" value="${row.name || ""}" ${locked ? "disabled" : ""}
                         onchange="updateField(${i}, 'name', this.value)"></td>
-                      <td><input type="number" value="${row.quantity || ""}" ${locked ? "disabled" : ""}
+                      <td><input type="text" inputmode="numeric" value="${row.quantity || ""}" ${locked ? "disabled" : ""}
                         onchange="updateField(${i}, 'quantity', this.value)" style="width:52px"></td>
                       <td class="price-cell">${fmt(calcPrice(row.quantity))}</td>
                       <td><input type="checkbox" ${row.paid ? "checked" : ""}
