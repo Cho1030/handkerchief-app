@@ -251,7 +251,7 @@ function render() {
         </div>
       </div>
 
-      <div class="summary">
+      <div class="summary" id="summary-area">
         <div>총 수량: <b>${fmt(totalQty)}</b></div>
         <div>총 금액: <b>${fmt(totalPrice)}</b></div>
         <div>미입금: <b class="unpaid">${fmt(unpaidTotal)}</b></div>
@@ -311,8 +311,8 @@ function render() {
                       <td><input type="text" value="${row.name || ""}" ${locked ? "disabled" : ""}
                         onchange="updateField(${i}, 'name', this.value)"></td>
                       <td><input type="number" value="${row.quantity || ""}" ${locked ? "disabled" : ""}
-                        onchange="updateField(${i}, 'quantity', this.value)" style="width:70px"></td>
-                      <td>${fmt(calcPrice(row.quantity))}</td>
+                        onchange="updateField(${i}, 'quantity', this.value)" style="width:52px"></td>
+                      <td class="price-cell">${fmt(calcPrice(row.quantity))}</td>
                       <td><input type="checkbox" ${row.paid ? "checked" : ""}
                         onchange="updateField(${i}, 'paid', this.checked)"></td>
                       <td><input type="checkbox" ${row.paidConfirm ? "checked" : ""}
@@ -337,7 +337,16 @@ function handlePriceInput(el) {
   const raw = el.value.replace(/,/g, "");
   if (isNaN(raw)) return;
   rounds[activeIndex].meta.pricePer100 = raw;
-  render();
+  const data = rounds[activeIndex].data || [];
+  const totalQty = data.reduce((s, r) => s + Number(r.quantity || 0), 0);
+  const totalPrice = data.reduce((s, r) => s + calcPrice(r.quantity), 0);
+  const unpaidTotal = data.filter(r => !r.paid).reduce((s, r) => s + calcPrice(r.quantity), 0);
+  const s = document.getElementById("summary-area");
+  if (s) s.innerHTML = `<div>총 수량: <b>${fmt(totalQty)}</b></div><div>총 금액: <b>${fmt(totalPrice)}</b></div><div>미입금: <b class="unpaid">${fmt(unpaidTotal)}</b></div>`;
+  document.querySelectorAll(".price-cell").forEach((td, idx) => {
+    const rows = getFilteredData();
+    if (rows[idx]) td.textContent = fmt(calcPrice(rows[idx].quantity));
+  });
 }
 function handlePriceChange(el) {
   const raw = el.value.replace(/,/g, "");
