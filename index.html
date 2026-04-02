@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>손수건 신청 관리</title>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f5; color: #222; font-size: 15px; }
@@ -123,7 +123,12 @@ ref.on("value", snap => {
   const val = snap.val();
   isRemoteUpdate = true;
   if (val) {
-    rounds = val;
+    // Firebase는 배열을 객체로 반환하므로 변환 필요
+    const arr = Array.isArray(val) ? val : Object.values(val);
+    rounds = arr.map(r => ({
+      ...r,
+      data: r.data ? (Array.isArray(r.data) ? r.data : Object.values(r.data)) : []
+    }));
     if (activeIndex >= rounds.length) activeIndex = 0;
   } else {
     rounds = [{ name: "1차", meta: { orderer: "", orderDone: false, shippingDone: false, pricePer100: "" }, data: [] }];
@@ -133,6 +138,9 @@ ref.on("value", snap => {
   mainEl.style.display = "block";
   render();
   isRemoteUpdate = false;
+}, err => {
+  console.error("Firebase 오류:", err);
+  loadingEl.textContent = "데이터 로드 실패: " + err.message;
 });
 
 function save() {
